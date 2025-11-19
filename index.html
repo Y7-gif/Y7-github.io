@@ -1,0 +1,1313 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>恋爱占有欲指数测评</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <!-- 引入Chart.js用于绘制占比图 -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+  
+  <!-- Tailwind 配置 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#E00454',
+            secondary: '#E00454',
+            tertiary: '##22CEB1',
+            dark: '#7D1048',
+            dimension1: '#5DE2E7',
+            dimension2: '#5DE2E7',
+            dimension3: '#E95D90',
+            dimension4: '#E95D90',
+            dimension5: '#BE185D',
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+          boxShadow: {
+            'soft': '0 4px 20px rgba(0, 0, 0, 0.05)',
+            'hover': '0 10px 30px rgba(233, 68, 106, 0.15)',
+          }
+        },
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .text-shadow {
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      .transition-custom {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+      }
+      .card-hover {
+        @apply transition-custom hover:shadow-hover hover:-translate-y-1;
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-gray-50 font-sans text-dark">
+  <!-- 导航栏 -->
+  <nav id="navbar" class="fixed w-full bg-white/90 backdrop-blur-sm shadow-soft z-50 transition-custom">
+    <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+      <div class="flex items-center space-x-2">
+        <i class="fa fa-heart text-primary text-xl"></i>
+        <span class="font-bold text-lg md:text-xl">恋爱占有欲测评</span>
+      </div>
+      <div class="hidden md:flex space-x-6">
+        <a href="#test" class="hover:text-primary transition-custom">开始测评</a>
+      </div>
+      <button id="mobile-menu-button" class="md:hidden text-dark">
+        <i class="fa fa-bars text-xl"></i>
+      </button>
+    </div>
+    <!-- 移动端菜单 -->
+    <div id="mobile-menu" class="hidden md:hidden bg-white border-t">
+      <div class="container mx-auto px-4 py-2 flex flex-col space-y-3">
+        <a href="#test" class="py-2 hover:text-primary transition-custom">开始测评</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- 英雄区域 -->
+  <header class="pt-24 pb-16 md:pt-32 md:pb-24 bg-gradient-to-br from-tertiary to-white">
+    <div class="container mx-auto px-4 text-center">
+      <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold text-dark mb-6 leading-tight text-shadow">
+        恋爱占有欲指数<br>测评分析
+      </h1>
+      <p class="text-gray-600 max-w-2xl mx-auto text-lg mb-8">
+        探索你在恋爱中的占有欲程度，了解自己的情感模式，
+        学会在亲密关系中找到平衡与和谐。
+      </p>
+      <a href="#test" class="inline-block bg-primary hover:bg-primary/90 text-white font-medium py-3 px-8 rounded-full shadow-soft transition-custom">
+        开始测评 <i class="fa fa-arrow-right ml-2"></i>
+      </a>
+    </div>
+  </header>
+
+  <main class="container mx-auto px-4 py-12">
+    <!-- 测试部分 -->
+    <section id="test" class="mb-20">
+      <div class="text-center mb-12">
+        <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold mb-4">开始测评</h2>
+        <p class="text-gray-600 max-w-2xl mx-auto mb-4">
+          请根据你的真实情况选择最符合你的选项，完成50道题目后即可获得你的恋爱占有欲指数分析。
+          <br>（选项按低占有欲到高占有欲梯度设置）
+        </p>
+        <div class="w-20 h-1 bg-primary mx-auto rounded-full"></div>
+      </div>
+      
+      <!-- 进度条 -->
+      <div class="max-w-4xl mx-auto mb-8">
+        <div class="flex justify-between items-center mb-2">
+          <span class="text-sm font-medium" id="progress-text">第 1/50 题</span>
+          <!-- 移除实时分数显示 -->
+        </div>
+        <div class="w-full bg-gray-200 rounded-full h-2.5">
+          <div id="progress-bar" class="bg-primary h-2.5 rounded-full transition-custom" style="width: 2%"></div>
+        </div>
+      </div>
+      
+      <!-- 测试容器 -->
+      <div class="max-w-4xl mx-auto">
+        <!-- 维度导航 -->
+        <div class="flex flex-wrap gap-2 mb-6">
+          <button class="dimension-btn bg-primary text-white px-3 py-1 rounded-full text-sm active" data-dimension="1">控制倾向</button>
+          <button class="dimension-btn bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded-full text-sm" data-dimension="2">嫉妒情绪</button>
+          <button class="dimension-btn bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded-full text-sm" data-dimension="3">情感依赖</button>
+          <button class="dimension-btn bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded-full text-sm" data-dimension="4">边界侵犯</button>
+          <button class="dimension-btn bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded-full text-sm" data-dimension="5">关系不安与排他</button>
+        </div>
+        
+        <!-- 问题容器 -->
+        <div id="questions-container" class="bg-white rounded-2xl shadow-soft p-6 md:p-8 mb-8 min-h-[300px]">
+          <!-- 问题会通过JS动态加载 -->
+        </div>
+        
+        <!-- 导航按钮 -->
+        <div class="flex justify-between">
+          <button id="prev-btn" class="bg-gray-200 hover:bg-gray-300 text-dark font-medium py-2 px-6 rounded-full transition-custom opacity-50 cursor-not-allowed">
+            <i class="fa fa-arrow-left mr-2"></i> 上一题
+          </button>
+          <button id="next-btn" class="bg-primary hover:bg-primary/90 text-white font-medium py-2 px-6 rounded-full transition-custom">
+            下一题 <i class="fa fa-arrow-right ml-2"></i>
+          </button>
+        </div>
+      </div>
+    </section>
+    
+    <!-- 结果部分 -->
+    <section id="results" class="hidden max-w-4xl mx-auto mb-20">
+      <div class="text-center mb-12">
+        <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold mb-4">你的测评结果</h2>
+        <div class="w-20 h-1 bg-primary mx-auto rounded-full"></div>
+      </div>
+      
+      <div class="bg-white rounded-2xl shadow-soft p-6 md:p-8 mb-8">
+        <div class="text-center mb-8">
+          <div class="inline-block p-4 rounded-full bg-primary/10 mb-4">
+            <i class="fa fa-heart text-primary text-4xl"></i>
+          </div>
+          <h3 class="text-2xl font-bold mb-2" id="result-title">你的恋爱占有欲类型</h3>
+          <p class="text-3xl font-bold text-primary mb-2" id="result-score">总分：0 分</p>
+          <p class="text-gray-600" id="result-range">评分范围：0-0 分</p>
+        </div>
+        
+        <!-- 维度占比图 -->
+        <div class="mb-8">
+          <h4 class="text-lg font-semibold mb-4 text-center">各维度占比分析</h4>
+          <div class="w-full max-w-2xl mx-auto h-[300px] md:h-[400px]">
+            <canvas id="dimension-chart"></canvas>
+          </div>
+          <!-- 维度图例 -->
+          <div class="flex flex-wrap justify-center gap-x-6 gap-y-2 mt-4 text-sm">
+            <div class="flex items-center">
+              <span class="w-3 h-3 rounded-full bg-dimension1 mr-2"></span>
+              <span>控制倾向</span>
+            </div>
+            <div class="flex items-center">
+              <span class="w-3 h-3 rounded-full bg-dimension2 mr-2"></span>
+              <span>嫉妒情绪</span>
+            </div>
+            <div class="flex items-center">
+              <span class="w-3 h-3 rounded-full bg-dimension3 mr-2"></span>
+              <span>情感依赖</span>
+            </div>
+            <div class="flex items-center">
+              <span class="w-3 h-3 rounded-full bg-dimension4 mr-2"></span>
+              <span>边界侵犯</span>
+            </div>
+            <div class="flex items-center">
+              <span class="w-3 h-3 rounded-full bg-dimension5 mr-2"></span>
+              <span>关系不安与排他</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="mb-6">
+          <h4 class="text-lg font-semibold mb-3">类型解析</h4>
+          <p class="text-gray-700" id="result-description">
+            解析内容将在这里显示...
+          </p>
+        </div>
+        
+        <div>
+          <h4 class="text-lg font-semibold mb-3">专属改进建议</h4>
+          <ul class="space-y-2 text-gray-700" id="result-advice">
+            <!-- 建议将在这里显示 -->
+          </ul>
+        </div>
+      </div>
+      
+      <div class="text-center">
+        <button id="restart-btn" class="bg-primary hover:bg-primary/90 text-white font-medium py-3 px-8 rounded-full shadow-soft transition-custom">
+          重新测评 <i class="fa fa-refresh ml-2"></i>
+        </button>
+      </div>
+    </section>
+  </main>
+  
+  <!-- 页脚 -->
+  <footer class="bg-dark text-white py-10">
+    <div class="container mx-auto px-4 text-center">
+      <div class="flex items-center justify-center space-x-2 mb-4">
+        <i class="fa fa-heart text-primary text-xl"></i>
+        <span class="font-bold text-lg">恋爱占有欲指数测评</span>
+      </div>
+      <p class="text-gray-400 max-w-md mx-auto mb-6">
+        本测评仅供参考，不构成专业心理诊断。若在感情中遇到困惑，建议寻求专业心理咨询师帮助。
+      </p>
+      <p class="text-gray-500 text-sm">
+        &copy; 2025 恋爱心理测评 | 所有权利保留
+      </p>
+    </div>
+  </footer>
+  
+  <!-- 返回顶部按钮 -->
+  <button id="back-to-top" class="fixed bottom-6 right-6 bg-primary text-white w-12 h-12 rounded-full flex items-center justify-center shadow-soft opacity-0 invisible transition-custom">
+    <i class="fa fa-arrow-up"></i>
+  </button>
+
+  <script>
+    // 问题数据（与之前保持一致）
+    const questions = [
+      // 一、控制倾向维度（10题）
+      {
+        id: 1,
+        dimension: 1,
+        dimensionName: "控制倾向",
+        text: "你会要求伴侣每天跟你报备当日行程吗？",
+        options: [
+          { value: 2, text: "A. 从不，信任对方的自主安排" },
+          { value: 1.5, text: "B. 偶尔，长时间失联时会询问" },
+          { value: 1, text: "C. 经常，希望掌握对方全天动态" },
+          { value: 0.5, text: "D. 必须，要求逐时段详细说明" }
+        ]
+      },
+      {
+        id: 2,
+        dimension: 1,
+        dimensionName: "控制倾向",
+        text: "伴侣想单独和朋友（含异性）出游，你会？",
+        options: [
+          { value: 2, text: "A. 完全支持，不干涉任何计划" },
+          { value: 1.5, text: "B. 有点担心，但尊重其决定" },
+          { value: 1, text: "C. 明确反对，要求带上你或取消" },
+          { value: 0.5, text: "D. 强制阻止，不允许单独出行" }
+        ]
+      },
+      {
+        id: 3,
+        dimension: 1,
+        dimensionName: "控制倾向",
+        text: "你会干预伴侣的职业选择或跳槽决定吗？",
+        options: [
+          { value: 2, text: "A. 不干预，尊重其职业规划" },
+          { value: 1.5, text: "B. 提供建议，但不强迫接受" },
+          { value: 1, text: "C. 要求优先考虑你的需求（如距离、时间）" },
+          { value: 0.5, text: "D. 必须由你决定，否则会争执" }
+        ]
+      },
+      {
+        id: 4,
+        dimension: 1,
+        dimensionName: "控制倾向",
+        text: "伴侣的社交媒体内容，你会要求审核吗？",
+        options: [
+          { value: 2, text: "A. 从不，对方可自由发布" },
+          { value: 1.5, text: "B. 偶尔调侃，但不干涉" },
+          { value: 1, text: "C. 要求发布前告知，不合适的要修改" },
+          { value: 0.5, text: "D. 每条都要审核，不符合你的要求就删除" }
+        ]
+      },
+      {
+        id: 5,
+        dimension: 1,
+        dimensionName: "控制倾向",
+        text: "你会限制伴侣的娱乐时间（如打游戏、追剧）吗？",
+        options: [
+          { value: 2, text: "A. 不限制，尊重其放松方式" },
+          { value: 1.5, text: "B. 偶尔提醒别熬夜，无实际限制" },
+          { value: 1, text: "C. 明确规定时长，超时会不满" },
+          { value: 0.5, text: "D. 几乎禁止，要求所有时间陪你" }
+        ]
+      },
+      {
+        id: 6,
+        dimension: 1,
+        dimensionName: "控制倾向",
+        text: "伴侣想培养你不感兴趣的爱好，你会？",
+        options: [
+          { value: 2, text: "A. 支持鼓励，为其感到开心" },
+          { value: 1.5, text: "B. 不反对，但也不会参与" },
+          { value: 1, text: "C. 表达不满，希望其放弃" },
+          { value: 0.5, text: "D. 强烈阻止，认为是浪费时间" }
+        ]
+      },
+      {
+        id: 7,
+        dimension: 1,
+        dimensionName: "控制倾向",
+        text: "你会要求伴侣把工资卡交给你保管吗？",
+        options: [
+          { value: 2, text: "A. 不会，各自财务独立" },
+          { value: 1.5, text: "B. 无所谓，对方自愿就好" },
+          { value: 1, text: "C. 希望共同管理，大额支出需商量" },
+          { value: 0.5, text: "D. 必须上交，所有支出由你掌控" }
+        ]
+      },
+      {
+        id: 8,
+        dimension: 1,
+        dimensionName: "控制倾向",
+        text: "伴侣和家人朋友聚餐，你会频繁催其回家吗？",
+        options: [
+          { value: 2, text: "A. 从不催促，让其尽兴" },
+          { value: 1.5, text: "B. 偶尔问一句结束时间" },
+          { value: 1, text: "C. 多次催促，要求早点回来" },
+          { value: 0.5, text: "D. 规定回家时间，超时会发脾气" }
+        ]
+      },
+      {
+        id: 9,
+        dimension: 1,
+        dimensionName: "控制倾向",
+        text: "你会干预伴侣的穿搭风格吗？",
+        options: [
+          { value: 2, text: "A. 不干预，尊重其审美" },
+          { value: 1.5, text: "B. 偶尔给建议，不强迫" },
+          { value: 1, text: "C. 要求穿你喜欢的风格，否则不开心" },
+          { value: 0.5, text: "D. 必须按你的要求穿，否则不出门" }
+        ]
+      },
+      {
+        id: 10,
+        dimension: 1,
+        dimensionName: "控制倾向",
+        text: "伴侣想做整形、纹身等改变外形的决定，你会？",
+        options: [
+          { value: 2, text: "A. 支持，尊重其自我选择" },
+          { value: 1.5, text: "B. 有点担心，但不反对" },
+          { value: 1, text: "C. 明确反对，极力劝说放弃" },
+          { value: 0.5, text: "D. 坚决阻止，甚至以分手威胁" }
+        ]
+      },
+      
+      // 二、嫉妒情绪维度（10题）
+      {
+        id: 11,
+        dimension: 2,
+        dimensionName: "嫉妒情绪",
+        text: "伴侣的异性同事频繁找其对接工作，你会？",
+        options: [
+          { value: 2, text: "A. 觉得正常，不放在心上" },
+          { value: 1.5, text: "B. 有点在意，但能理解" },
+          { value: 1, text: "C. 心里不舒服，要求减少单独对接" },
+          { value: 0.5, text: "D. 认定对方有好感，让伴侣辞职或换岗" }
+        ]
+      },
+      {
+        id: 12,
+        dimension: 2,
+        dimensionName: "嫉妒情绪",
+        text: "看到伴侣朋友圈给异性点赞评论，你会？",
+        options: [
+          { value: 2, text: "A. 无所谓，正常社交互动" },
+          { value: 1.5, text: "B. 偶尔会问一句“你们很熟吗”" },
+          { value: 1, text: "C. 心里吃醋，要求别频繁互动" },
+          { value: 0.5, text: "D. 非常愤怒，让其删除对方好友" }
+        ]
+      },
+      {
+        id: 13,
+        dimension: 2,
+        dimensionName: "嫉妒情绪",
+        text: "伴侣参加同学聚会，其中有其前任，你会？",
+        options: [
+          { value: 2, text: "A. 信任对方，让其正常参加" },
+          { value: 1.5, text: "B. 有点介意，但不阻止" },
+          { value: 1, text: "C. 要求全程共享位置，随时视频" },
+          { value: 0.5, text: "D. 坚决不让参加，否则会吵架" }
+        ]
+      },
+      {
+        id: 14,
+        dimension: 2,
+        dimensionName: "嫉妒情绪",
+        text: "异性朋友给伴侣送生日祝福，言语较亲昵，你会？",
+        options: [
+          { value: 2, text: "A. 觉得正常，一起感谢对方" },
+          { value: 1.5, text: "B. 有点不舒服，但很快释怀" },
+          { value: 1, text: "C. 要求伴侣明确告知对方保持距离" },
+          { value: 0.5, text: "D. 直接回复对方，警告其别越界" }
+        ]
+      },
+      {
+        id: 15,
+        dimension: 2,
+        dimensionName: "嫉妒情绪",
+        text: "伴侣在你面前夸其他异性优秀，你会？",
+        options: [
+          { value: 2, text: "A. 认可其眼光，一起讨论" },
+          { value: 1.5, text: "B. 有点小失落，但不表现出来" },
+          { value: 1, text: "C. 心里不悦，当场打断话题" },
+          { value: 0.5, text: "D. 非常生气，认为对方是在暗示你不够好" }
+        ]
+      },
+      {
+        id: 16,
+        dimension: 2,
+        dimensionName: "嫉妒情绪",
+        text: "伴侣手机里有异性的联系方式（工作外），你会？",
+        options: [
+          { value: 2, text: "A. 觉得正常，不干涉" },
+          { value: 1.5, text: "B. 有点好奇，但不会追问" },
+          { value: 1, text: "C. 要求对方解释认识过程，频繁查看聊天记录" },
+          { value: 0.5, text: "D. 强制让对方删除，否则不依不饶" }
+        ]
+      },
+      {
+        id: 17,
+        dimension: 2,
+        dimensionName: "嫉妒情绪",
+        text: "有异性向伴侣表白（即使被拒绝），你会？",
+        options: [
+          { value: 2, text: "A. 相信伴侣的忠诚，不焦虑" },
+          { value: 1.5, text: "B. 有点担心，但会观察后续" },
+          { value: 1, text: "C. 要求伴侣拉黑对方，不再联系" },
+          { value: 0.5, text: "D. 反复追问细节，怀疑伴侣有二心" }
+        ]
+      },
+      {
+        id: 18,
+        dimension: 2,
+        dimensionName: "嫉妒情绪",
+        text: "伴侣和异性一起拍合照（如团建、聚会），你会？",
+        options: [
+          { value: 2, text: "A. 觉得正常，不会多想" },
+          { value: 1.5, text: "B. 有点介意，但能接受" },
+          { value: 1, text: "C. 要求对方删除，否则心里不舒服" },
+          { value: 0.5, text: "D. 大发雷霆，认为对方不避嫌" }
+        ]
+      },
+      {
+        id: 19,
+        dimension: 2,
+        dimensionName: "嫉妒情绪",
+        text: "伴侣记得异性朋友的生日并送祝福，你会？",
+        options: [
+          { value: 2, text: "A. 觉得正常，尊重其用心" },
+          { value: 1.5, text: "B. 有点在意，但不会指责" },
+          { value: 1, text: "C. 心里吃醋，抱怨对方记得别人却忘了你的细节" },
+          { value: 0.5, text: "D. 非常愤怒，认为对方对别人太上心" }
+        ]
+      },
+      {
+        id: 20,
+        dimension: 2,
+        dimensionName: "嫉妒情绪",
+        text: "你会拿自己和伴侣身边的异性比较，觉得不如对方吗？",
+        options: [
+          { value: 2, text: "A. 不会，认可自身独特性" },
+          { value: 1.5, text: "B. 偶尔会，但很快调整心态" },
+          { value: 1, text: "C. 经常会，担心伴侣被对方吸引" },
+          { value: 0.5, text: "D. 总是会，因此感到自卑和焦虑" }
+        ]
+      },
+      
+      // 三、情感依赖维度（10题）
+      {
+        id: 21,
+        dimension: 3,
+        dimensionName: "情感依赖",
+        text: "伴侣出差或异地，你会无法正常生活吗？",
+        options: [
+          { value: 2, text: "A. 不会，能独立安排自己的生活" },
+          { value: 1.5, text: "B. 有点孤单，但能自我调节" },
+          { value: 1, text: "C. 经常失眠、情绪低落，难以适应" },
+          { value: 0.5, text: "D. 完全无法正常生活，时刻想联系对方" }
+        ]
+      },
+      {
+        id: 22,
+        dimension: 3,
+        dimensionName: "情感依赖",
+        text: "你做重要决策（如换工作、买房），必须要伴侣同意吗？",
+        options: [
+          { value: 2, text: "A. 不需要，自己能做主" },
+          { value: 1.5, text: "B. 会参考意见，但最终自己决定" },
+          { value: 1, text: "C. 必须和伴侣商量一致才会做" },
+          { value: 0.5, text: "D. 完全由伴侣决定，自己没主见" }
+        ]
+      },
+      {
+        id: 23,
+        dimension: 3,
+        dimensionName: "情感依赖",
+        text: "你会每天都要和伴侣视频通话吗？",
+        options: [
+          { value: 2, text: "A. 不会，忙的时候就不联系" },
+          { value: 1.5, text: "B. 偶尔视频，大部分时间发消息" },
+          { value: 1, text: "C. 经常视频，每天至少一次" },
+          { value: 0.5, text: "D. 必须视频，每天多次，否则不安" }
+        ]
+      },
+      {
+        id: 24,
+        dimension: 3,
+        dimensionName: "情感依赖",
+        text: "伴侣没及时回复消息，你会忍不住胡思乱想吗？",
+        options: [
+          { value: 2, text: "A. 不会，知道对方可能在忙" },
+          { value: 1.5, text: "B. 有点担心，但不会多想" },
+          { value: 1, text: "C. 经常胡思乱想，越想越焦虑" },
+          { value: 0.5, text: "D. 立刻脑补负面场景，甚至打电话轰炸" }
+        ]
+      },
+      {
+        id: 25,
+        dimension: 3,
+        dimensionName: "情感依赖",
+        text: "你会把所有开心和难过的事都告诉伴侣吗？",
+        options: [
+          { value: 2, text: "A. 不会，会留部分心事自己消化" },
+          { value: 1.5, text: "B. 大部分会说，但也会和朋友分享" },
+          { value: 1, text: "C. 几乎都会说，觉得只有伴侣能理解" },
+          { value: 0.5, text: "D. 全部都会说，没有伴侣的安慰就无法释怀" }
+        ]
+      },
+      {
+        id: 26,
+        dimension: 3,
+        dimensionName: "情感依赖",
+        text: "伴侣对别人好（如帮助朋友），你会觉得被冷落吗？",
+        options: [
+          { value: 2, text: "A. 不会，为伴侣的善良感到开心" },
+          { value: 1.5, text: "B. 有点失落，但能理解" },
+          { value: 1, text: "C. 心里不舒服，希望伴侣只对自己好" },
+          { value: 0.5, text: "D. 非常难过，认为对方忽视了你的感受" }
+        ]
+      },
+      {
+        id: 27,
+        dimension: 3,
+        dimensionName: "情感依赖",
+        text: "如果伴侣暂时没时间陪你，你会？",
+        options: [
+          { value: 2, text: "A. 自己找事做，不打扰对方" },
+          { value: 1.5, text: "B. 有点无聊，但会耐心等待" },
+          { value: 1, text: "C. 频繁发消息催促，希望对方快点忙完" },
+          { value: 0.5, text: "D. 非常生气，觉得对方不重视你" }
+        ]
+      },
+      {
+        id: 28,
+        dimension: 3,
+        dimensionName: "情感依赖",
+        text: "你会因为伴侣的情绪不好而跟着低落吗？",
+        options: [
+          { value: 2, text: "A. 不会，能保持自己的情绪稳定" },
+          { value: 1.5, text: "B. 有点影响，但能快速调整" },
+          { value: 1, text: "C. 经常被影响，对方难过自己也开心不起来" },
+          { value: 0.5, text: "D. 完全被带动，对方的情绪决定你的状态" }
+        ]
+      },
+      {
+        id: 29,
+        dimension: 3,
+        dimensionName: "情感依赖",
+        text: "你会害怕伴侣不喜欢自己的某个缺点而刻意隐藏吗？",
+        options: [
+          { value: 2, text: "A. 不会，坦然展示真实的自己" },
+          { value: 1.5, text: "B. 偶尔会，但不会刻意伪装" },
+          { value: 1, text: "C. 经常会，担心对方嫌弃" },
+          { value: 0.5, text: "D. 总是会，完全不敢暴露任何缺点" }
+        ]
+      },
+      {
+        id: 30,
+        dimension: 3,
+        dimensionName: "情感依赖",
+        text: "如果伴侣忘记给你准备节日礼物，你会？",
+        options: [
+          { value: 2, text: "A. 不介意，觉得心意比礼物重要" },
+          { value: 1.5, text: "B. 有点失落，但不会指责" },
+          { value: 1, text: "C. 非常不满，抱怨对方不重视你" },
+          { value: 0.5, text: "D. 极度伤心，认为对方不爱你了" }
+        ]
+      },
+      
+      // 四、边界侵犯维度（10题）
+      {
+        id: 31,
+        dimension: 4,
+        dimensionName: "边界侵犯",
+        text: "你会未经允许翻看伴侣的手机、电脑吗？",
+        options: [
+          { value: 2, text: "A. 从不，觉得侵犯隐私" },
+          { value: 1.5, text: "B. 极度怀疑时会偶尔翻看" },
+          { value: 1, text: "C. 经常翻看，确保没有秘密" },
+          { value: 0.5, text: "D. 每天必看，要求对方无隐私" }
+        ]
+      },
+      {
+        id: 32,
+        dimension: 4,
+        dimensionName: "边界侵犯",
+        text: "你会追问伴侣的所有社交活动细节（如谁组织、有谁参加）吗？",
+        options: [
+          { value: 2, text: "A. 不会，对方愿意说就听" },
+          { value: 1.5, text: "B. 偶尔问一句，不深入追问" },
+          { value: 1, text: "C. 经常追问，要求说清所有细节" },
+          { value: 0.5, text: "D. 必须详细汇报，遗漏一点就生气" }
+        ]
+      },
+      {
+        id: 33,
+        dimension: 4,
+        dimensionName: "边界侵犯",
+        text: "伴侣想拥有自己的专属空间（如书房、储物区），你会？",
+        options: [
+          { value: 2, text: "A. 支持，尊重其独处需求" },
+          { value: 1.5, text: "B. 不反对，但会偶尔使用" },
+          { value: 1, text: "C. 不太愿意，希望所有空间共享" },
+          { value: 0.5, text: "D. 坚决反对，要求所有空间都能随意进出" }
+        ]
+      },
+      {
+        id: 34,
+        dimension: 4,
+        dimensionName: "边界侵犯",
+        text: "你会要求伴侣把所有社交账号密码告诉你吗？",
+        options: [
+          { value: 2, text: "A. 不会，尊重其账号安全" },
+          { value: 1.5, text: "B. 无所谓，对方自愿就给" },
+          { value: 1, text: "C. 希望知道，觉得这样更亲密" },
+          { value: 0.5, text: "D. 必须告知，否则会怀疑" }
+        ]
+      },
+      {
+        id: 35,
+        dimension: 4,
+        dimensionName: "边界侵犯",
+        text: "伴侣和朋友私下聊天，你会要求知道聊天内容吗？",
+        options: [
+          { value: 2, text: "A. 不会，尊重其私人对话" },
+          { value: 1.5, text: "B. 偶尔好奇，但不会追问" },
+          { value: 1, text: "C. 经常追问，希望了解所有话题" },
+          { value: 0.5, text: "D. 必须告知，不说明就觉得有问题" }
+        ]
+      },
+      {
+        id: 36,
+        dimension: 4,
+        dimensionName: "边界侵犯",
+        text: "你会干涉伴侣和家人的相处方式吗？",
+        options: [
+          { value: 2, text: "A. 不会，尊重其家庭关系" },
+          { value: 1.5, text: "B. 偶尔给建议，不强迫" },
+          { value: 1, text: "C. 经常干涉，觉得对方处理得不好" },
+          { value: 0.5, text: "D. 完全主导，要求按你的方式相处" }
+        ]
+      },
+      {
+        id: 37,
+        dimension: 4,
+        dimensionName: "边界侵犯",
+        text: "伴侣想单独和心理咨询师、树洞博主倾诉心事，你会？",
+        options: [
+          { value: 2, text: "A. 支持，尊重其倾诉需求" },
+          { value: 1.5, text: "B. 有点介意，但不反对" },
+          { value: 1, text: "C. 明确反对，希望对方只对你倾诉" },
+          { value: 0.5, text: "D. 坚决阻止，认为是对你们关系的背叛" }
+        ]
+      },
+      {
+        id: 38,
+        dimension: 4,
+        dimensionName: "边界侵犯",
+        text: "你会要求伴侣随时共享实时位置吗？",
+        options: [
+          { value: 2, text: "A. 不会，觉得没必要" },
+          { value: 1.5, text: "B. 偶尔出差时会要求" },
+          { value: 1, text: "C. 经常要求，尤其是外出时" },
+          { value: 0.5, text: "D. 必须随时共享，否则不安" }
+        ]
+      },
+      {
+        id: 39,
+        dimension: 4,
+        dimensionName: "边界侵犯",
+        text: "伴侣的快递、信件，你会未经允许拆开查看吗？",
+        options: [
+          { value: 2, text: "A. 从不，尊重其隐私" },
+          { value: 1.5, text: "B. 偶尔误拆，但会道歉" },
+          { value: 1, text: "C. 经常拆开，想知道里面是什么" },
+          { value: 0.5, text: "D. 每次都会拆，觉得没必要回避" }
+        ]
+      },
+      {
+        id: 40,
+        dimension: 4,
+        dimensionName: "边界侵犯",
+        text: "你会限制伴侣和前任的任何联系（即使是工作）吗？",
+        options: [
+          { value: 2, text: "A. 不会，相信对方能把握分寸" },
+          { value: 1.5, text: "B. 有点介意，但不禁止" },
+          { value: 1, text: "C. 明确禁止，要求断绝所有联系" },
+          { value: 0.5, text: "D. 不仅禁止，还会检查对方是否偷偷联系" }
+        ]
+      },
+      
+      // 五、关系不安与排他维度（10题）
+      {
+        id: 41,
+        dimension: 5,
+        dimensionName: "关系不安与排他",
+        text: "你会担心伴侣最终会离开你吗？",
+        options: [
+          { value: 2, text: "A. 从不担心，信任这段关系" },
+          { value: 1.5, text: "B. 偶尔会，但很快打消念头" },
+          { value: 1, text: "C. 经常担心，觉得关系不稳定" },
+          { value: 0.5, text: "D. 时刻担心，无法安心投入" }
+        ]
+      },
+      {
+        id: 42,
+        dimension: 5,
+        dimensionName: "关系不安与排他",
+        text: "伴侣稍微对你冷淡一点，你会觉得是不爱你了吗？",
+        options: [
+          { value: 2, text: "A. 不会，觉得可能是对方累了" },
+          { value: 1.5, text: "B. 有点怀疑，但不会多想" },
+          { value: 1, text: "C. 经常这么觉得，越想越不安" },
+          { value: 0.5, text: "D. 肯定这么认为，立刻追问原因" }
+        ]
+      },
+      {
+        id: 43,
+        dimension: 5,
+        dimensionName: "关系不安与排他",
+        text: "你会要求伴侣只对你一个人好，不能对别人（包括朋友、家人）太用心吗？",
+        options: [
+          { value: 2, text: "A. 不会，知道对方需要多方面的情感连接" },
+          { value: 1.5, text: "B. 有点希望，但能理解" },
+          { value: 1, text: "C. 经常要求，觉得自己应该是第一位" },
+          { value: 0.5, text: "D. 必须如此，否则会觉得被忽视" }
+        ]
+      },
+      {
+        id: 44,
+        dimension: 5,
+        dimensionName: "关系不安与排他",
+        text: "你会害怕伴侣遇到更优秀的人后抛弃你吗？",
+        options: [
+          { value: 2, text: "A. 不会，相信自己的魅力和感情" },
+          { value: 1.5, text: "B. 偶尔会，但很快调整心态" },
+          { value: 1, text: "C. 经常害怕，因此感到焦虑" },
+          { value: 0.5, text: "D. 时刻害怕，甚至限制伴侣接触新人" }
+        ]
+      },
+      {
+        id: 45,
+        dimension: 5,
+        dimensionName: "关系不安与排他",
+        text: "你会反复向伴侣确认“你是不是真的爱我”吗？",
+        options: [
+          { value: 2, text: "A. 不会，觉得没必要" },
+          { value: 1.5, text: "B. 偶尔情绪低落时会问" },
+          { value: 1, text: "C. 经常会问，需要不断得到肯定" },
+          { value: 0.5, text: "D. 每天都要问，否则无法安心" }
+        ]
+      },
+      {
+        id: 46,
+        dimension: 5,
+        dimensionName: "关系不安与排他",
+        text: "伴侣和别人产生分歧时，你会担心对方站在别人那边吗？",
+        options: [
+          { value: 2, text: "A. 不会，相信对方会公正看待" },
+          { value: 1.5, text: "B. 有点担心，但不会表现出来" },
+          { value: 1, text: "C. 经常担心，希望对方无条件站你" },
+          { value: 0.5, text: "D. 肯定担心，要求对方必须维护你" }
+        ]
+      },
+      {
+        id: 47,
+        dimension: 5,
+        dimensionName: "关系不安与排他",
+        text: "你会觉得伴侣的所有注意力都应该放在你身上吗？",
+        options: [
+          { value: 2, text: "A. 不会，知道对方有自己的事情" },
+          { value: 1.5, text: "B. 偶尔希望，但能理解" },
+          { value: 1, text: "C. 经常这么觉得，不满对方分心" },
+          { value: 0.5, text: "D. 必须如此，否则会发脾气" }
+        ]
+      },
+      {
+        id: 48,
+        dimension: 5,
+        dimensionName: "关系不安与排他",
+        text: "你会因为伴侣和别人合作完成某件事（如工作项目、兴趣作品）而吃醋吗？",
+        options: [
+          { value: 2, text: "A. 不会，觉得正常合作而已" },
+          { value: 1.5, text: "B. 有点在意，但能接受" },
+          { value: 1, text: "C. 经常吃醋，希望对方只和自己合作" },
+          { value: 0.5, text: "D. 非常吃醋，甚至阻止对方合作" }
+        ]
+      },
+      {
+        id: 49,
+        dimension: 5,
+        dimensionName: "关系不安与排他",
+        text: "你会担心伴侣对别人产生好感，而不再爱你吗？",
+        options: [
+          { value: 2, text: "A. 不会，信任对方的忠诚" },
+          { value: 1.5, text: "B. 偶尔会，但不会多想" },
+          { value: 1, text: "C. 经常担心，因此变得敏感" },
+          { value: 0.5, text: "D. 时刻担心，甚至会监视对方" }
+        ]
+      },
+      {
+        id: 50,
+        dimension: 5,
+        dimensionName: "关系不安与排他",
+        text: "你会要求伴侣在你和其朋友、家人之间，优先选择你吗？",
+        options: [
+          { value: 2, text: "A. 不会，尊重对方的优先级" },
+          { value: 1.5, text: "B. 偶尔希望，但会协商" },
+          { value: 1, text: "C. 经常要求，觉得自己应该更重要" },
+          { value: 0.5, text: "D. 必须优先选择你，否则会分手" }
+        ]
+      }
+    ];
+    
+    // 结果类型数据（与之前保持一致）
+    const resultTypes = [
+      {
+        min: 25,
+        max: 40,
+        title: "自由自在",
+        description: "你是“感情里的独立派”，把“尊重边界”看得比“紧密捆绑”更重要。你信任伴侣的选择，不刻意追问隐私、不干涉社交与生活节奏，也不会因对方的正常人际互动产生嫉妒或不安。你保持着自己的生活重心，情感上不过度依赖，既享受恋爱的温暖，也珍视彼此的自由空间。这种松弛感让感情少了内耗，多了舒适感，是“势均力敌、彼此成全”的健康恋爱状态。",
+        advice: [
+          "偶尔主动分享自己的动态与感受，避免因过度独立让对方觉得“不被需要”，给感情增添亲密感；",
+          "当伴侣表达在意时，积极回应这份心意，不敷衍对待，让对方感受到你的重视；",
+          "定期和伴侣沟通“边界感”的共识，既守住彼此的自由，也明确彼此的在意，避免因“太佛系”产生隔阂。"
+        ]
+      },
+      {
+        min: 41,
+        max: 70,
+        title: "恰到好处",
+        description: "你是“理性与感性的平衡者”，占有欲藏在“在乎”里，却不越界。你会在意伴侣的动态，偶尔因小事产生轻微不安或嫉妒，但能快速自我调节；会表达对感情的重视，却不强迫对方事事顺从；会分享心事、依赖彼此，也会给对方留足独立空间。你的占有欲是感情的“调味剂”，既让对方感受到被在乎，又不会让人觉得压抑，是大多数人向往的“亲密而有间”的理想状态。",
+        advice: [
+          "当产生轻微不安或嫉妒时，直接坦诚表达感受（如“你和异性聊得太投入，我有点吃醋”），而非暗自纠结或试探；",
+          "尊重伴侣的独立选择，但可适度分享自己的期待（如“希望你出差前多和我说说行程”），让“在乎”更清晰；",
+          "继续保持“亲密不捆绑”的节奏，偶尔给伴侣制造小惊喜，让感情在“松弛”与“热烈”间持续保鲜。"
+        ]
+      },
+      {
+        min: 71,
+        max: 100,
+        title: "爱到极致",
+        description: "你是“为爱倾尽所有的投入者”，占有欲源于对感情的极致重视与深层不安。你会把伴侣放在生活的核心位置，渴望时刻掌握对方动态、希望成为彼此的“唯一”，甚至会因过度在意而产生较强的控制欲或嫉妒心。你的爱热烈而浓烈，满是“怕失去”的执念，却容易在不知不觉中给对方带来压力，甚至让感情陷入“捆绑式内耗”。这份爱是真诚的，但需要学会适度松绑，在“爱”与“尊重”之间找到平衡。",
+        advice: [
+          "先关注自身安全感来源，培养自己的兴趣爱好、社交圈，减少对伴侣的过度依赖，避免把“自我价值”绑定在感情上；",
+          "给伴侣设定“可控的自由”，比如约定“重要行程提前告知”，而非事事追问、强行控制，减少对方的压迫感；",
+          "当出现强烈控制欲或嫉妒心时，先暂停行动（如不立刻翻手机、不指责），深呼吸后和伴侣沟通深层担忧（如“我怕你离开我，所以才想知道你的所有动态”），用“示弱”代替“强势控制”，让对方理解你的不安而非反感。"
+        ]
+      },
+      {
+        min: 101,
+        max: 140,
+        title: "过度捆绑",
+        description: "你是“爱到窒息的掌控者”，占有欲已超出理性边界，源于强烈的不安全感和“必须完全掌控”的执念。你会过度干涉伴侣的社交、工作甚至私人决策，频繁查岗、翻手机、限制对方独处，将“忠诚”等同于“绝对服从”。你的爱带着强烈的压迫感，既让自己陷入“怕失去”的焦虑内耗，也让伴侣感到窒息，长期容易引发感情矛盾或对方的逃避。",
+        advice: [
+          "强制给自己“独立空间”，每天安排至少1小时完全不联系伴侣的时间，专注于自己的事，逐步适应独处；",
+          "寻求信任的朋友或心理咨询师帮助，梳理控制欲背后的深层恐惧（如被抛弃创伤、低自尊等），针对性解决；",
+          "与伴侣共同制定“边界清单”，明确双方都能接受的相处方式，从“允许每天有1小时不汇报行踪”等小事开始练习放手。"
+        ]
+      },
+      {
+        min: 141,
+        max: 200,
+        title: "极端执念",
+        description: "你是“情感依赖的偏执者”，占有欲演变为偏执型情感需求，将伴侣视为“自我的延伸”，完全无法接受对方有独立空间或不同意见。你可能会因极小的事情产生强烈嫉妒、猜忌，甚至出现跟踪、指责、否定对方等行为，把“爱”和“占有”完全划等号。这种状态不仅会摧毁感情，还可能影响双方的心理健康。",
+        advice: [
+          "优先寻求专业心理咨询，这种程度的偏执可能与早年情感创伤或人格特质相关，需要系统干预；",
+          "与伴侣坦诚沟通现状，若对方愿意共同面对，可尝试伴侣咨询；若关系已造成伤害，需理性评估是否适合继续；",
+          "通过冥想、正念训练等方式学习“情绪暂停”，当偏执想法出现时，先物理隔离（如离开现场10分钟）再处理，避免冲动行为。"
+        ]
+      }
+    ];
+    
+    // 全局变量
+    let currentQuestionIndex = 0;
+    const answers = new Array(questions.length).fill(null);
+    let totalScore = 0;
+    let dimensionScores = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0}; // 各维度得分
+    let dimensionMaxScores = {1: 20, 2: 20, 3: 20, 4: 20, 5: 20}; // 各维度满分（10题×2分）
+    
+    // DOM 元素
+    const questionsContainer = document.getElementById('questions-container');
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const progressBar = document.getElementById('progress-bar');
+    const progressText = document.getElementById('progress-text');
+    const testSection = document.getElementById('test');
+    const resultsSection = document.getElementById('results');
+    const resultTitle = document.getElementById('result-title');
+    const resultScore = document.getElementById('result-score');
+    const resultRange = document.getElementById('result-range');
+    const resultDescription = document.getElementById('result-description');
+    const resultAdvice = document.getElementById('result-advice');
+    const restartBtn = document.getElementById('restart-btn');
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const backToTopButton = document.getElementById('back-to-top');
+    const dimensionButtons = document.querySelectorAll('.dimension-btn');
+    let dimensionChart = null; // 图表实例
+    
+    // 初始化页面
+    function init() {
+      renderQuestion(currentQuestionIndex);
+      updateProgress();
+      setupEventListeners();
+    }
+    
+    // 渲染当前问题
+    function renderQuestion(index) {
+      const question = questions[index];
+      let optionsHtml = '';
+      
+      question.options.forEach((option, optIndex) => {
+        const isSelected = answers[index] === optIndex;
+        optionsHtml += `
+          <div class="mb-3">
+            <label class="flex items-start p-4 rounded-lg border ${isSelected ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-primary/30 hover:bg-primary/5'} cursor-pointer transition-custom">
+              <input type="radio" name="question-${question.id}" value="${optIndex}" class="mt-1 mr-3 text-primary focus:ring-primary" ${isSelected ? 'checked' : ''}>
+              <span>${option.text}</span>
+            </label>
+          </div>
+        `;
+      });
+      
+      questionsContainer.innerHTML = `
+        <div class="mb-6">
+          <span class="inline-block px-3 py-1 bg-secondary/30 text-primary rounded-full text-sm mb-3">
+            ${question.dimensionName}
+          </span>
+          <h3 class="text-xl font-semibold mb-4">${question.id}. ${question.text}</h3>
+        </div>
+        <div class="options">
+          ${optionsHtml}
+        </div>
+      `;
+      
+      // 添加选项点击事件
+      const radioInputs = questionsContainer.querySelectorAll('input[type="radio"]');
+      radioInputs.forEach(input => {
+        input.addEventListener('change', (e) => {
+          const selectedOptionIndex = parseInt(e.target.value);
+          const previousAnswer = answers[index];
+          const question = questions[index];
+          
+          // 更新总分和维度分
+          if (previousAnswer !== null) {
+            totalScore -= question.options[previousAnswer].value;
+            dimensionScores[question.dimension] -= question.options[previousAnswer].value;
+          }
+          totalScore += question.options[selectedOptionIndex].value;
+          dimensionScores[question.dimension] += question.options[selectedOptionIndex].value;
+          
+          // 保存答案
+          answers[index] = selectedOptionIndex;
+          
+          // 重新渲染问题以更新选中状态
+          renderQuestion(index);
+        });
+      });
+    }
+    
+    // 更新进度条和进度文本
+    function updateProgress() {
+      const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
+      progressBar.style.width = `${progress}%`;
+      progressText.textContent = `第 ${currentQuestionIndex + 1}/${questions.length} 题`;
+      
+      // 更新按钮状态
+      if (currentQuestionIndex === 0) {
+        prevBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        prevBtn.disabled = true;
+      } else {
+        prevBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        prevBtn.disabled = false;
+      }
+      
+      if (currentQuestionIndex === questions.length - 1) {
+        nextBtn.textContent = '查看结果';
+        nextBtn.innerHTML = '查看结果 <i class="fa fa-check ml-2"></i>';
+      } else {
+        nextBtn.textContent = '下一题';
+        nextBtn.innerHTML = '下一题 <i class="fa fa-arrow-right ml-2"></i>';
+      }
+    }
+    
+    // 创建维度占比图
+    function createDimensionChart() {
+      // 准备图表数据
+      const ctx = document.getElementById('dimension-chart').getContext('2d');
+      
+      // 计算各维度的相对得分百分比（相对于本维度满分）
+      const dimensionPercentages = [
+        (dimensionScores[1] / dimensionMaxScores[1]) * 100,
+        (dimensionScores[2] / dimensionMaxScores[2]) * 100,
+        (dimensionScores[3] / dimensionMaxScores[3]) * 100,
+        (dimensionScores[4] / dimensionMaxScores[4]) * 100,
+        (dimensionScores[5] / dimensionMaxScores[5]) * 100
+      ];
+      
+      // 销毁已存在的图表
+      if (dimensionChart) {
+        dimensionChart.destroy();
+      }
+      
+      // 创建雷达图
+      dimensionChart = new Chart(ctx, {
+        type: 'radar',
+        data: {
+          labels: ['控制倾向', '嫉妒情绪', '情感依赖', '边界侵犯', '关系不安与排他'],
+          datasets: [{
+            label: '你的得分比例',
+            data: dimensionPercentages,
+            backgroundColor: 'rgba(233, 68, 106, 0.2)',
+            borderColor: '#E9446A',
+            pointBackgroundColor: '#E9446A',
+            pointBorderColor: '#fff',
+            pointHoverBackgroundColor: '#fff',
+            pointHoverBorderColor: '#E9446A'
+          }]
+        },
+        options: {
+          scales: {
+            r: {
+              angleLines: {
+                display: true,
+                color: 'rgba(0, 0, 0, 0.1)'
+              },
+              suggestedMin: 0,
+              suggestedMax: 100,
+              ticks: {
+                display: false,
+                stepSize: 20
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              display: false
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return `比例: ${context.raw.toFixed(1)}%`;
+                }
+              }
+            }
+          },
+          elements: {
+            line: {
+              borderWidth: 2
+            }
+          },
+          responsive: true,
+          maintainAspectRatio: false
+        }
+      });
+    }
+    
+    // 显示结果
+    function showResults() {
+      // 找到对应的结果类型
+      let resultType = null;
+      for (let type of resultTypes) {
+        if (totalScore >= type.min && totalScore <= type.max) {
+          resultType = type;
+          break;
+        }
+      }
+      
+      // 如果分数低于最低分（25分），使用第一个类型但调整描述
+      if (!resultType && totalScore < resultTypes[0].min) {
+        resultType = {
+          ...resultTypes[0],
+          min: 0,
+          title: resultTypes[0].title + " (偏低)",
+          description: "你的占有欲非常低，甚至可能让伴侣感觉不到被在乎。你极度重视个人空间和边界，但在亲密关系中，适度的在乎和依赖是必要的。这种状态虽然减少了感情中的控制与内耗，但也可能因为过度独立让伴侣产生疏离感。"
+        };
+      }
+      
+      // 更新结果显示
+      resultTitle.textContent = resultType.title;
+      resultScore.textContent = `总分：${totalScore.toFixed(1)} 分`;
+      resultRange.textContent = `评分范围：${resultType.min}-${resultType.max} 分`;
+      resultDescription.textContent = resultType.description;
+      
+      // 生成专属建议列表
+      let adviceHtml = '';
+      resultType.advice.forEach((item, index) => {
+        adviceHtml += `
+          <li class="flex items-start">
+            <span class="bg-primary/10 text-primary rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 mt-0.5 mr-3 text-sm font-medium">${index + 1}</span>
+            <span>${item}</span>
+          </li>
+        `;
+      });
+      resultAdvice.innerHTML = adviceHtml;
+      
+      // 创建维度占比图
+      createDimensionChart();
+      
+      // 切换显示
+      testSection.classList.add('hidden');
+      resultsSection.classList.remove('hidden');
+      
+      // 滚动到结果部分
+      resultsSection.scrollIntoView({ behavior: 'smooth' });
+    }
+    
+    // 重置测试
+    function resetTest() {
+      currentQuestionIndex = 0;
+      answers.fill(null);
+      totalScore = 0;
+      dimensionScores = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0};
+      renderQuestion(currentQuestionIndex);
+      updateProgress();
+      
+      resultsSection.classList.add('hidden');
+      testSection.classList.remove('hidden');
+      
+      // 滚动到测试开始部分
+      testSection.scrollIntoView({ behavior: 'smooth' });
+    }
+    
+    // 切换到指定维度的第一个问题
+    function goToDimension(dimension) {
+      const firstQuestionInDimension = questions.findIndex(q => q.dimension === dimension);
+      if (firstQuestionInDimension !== -1) {
+        currentQuestionIndex = firstQuestionInDimension;
+        renderQuestion(currentQuestionIndex);
+        updateProgress();
+        
+        // 更新维度按钮状态
+        dimensionButtons.forEach(btn => {
+          if (parseInt(btn.dataset.dimension) === dimension) {
+            btn.classList.remove('bg-gray-200', 'hover:bg-gray-300');
+            btn.classList.add('bg-primary', 'text-white');
+          } else {
+            btn.classList.remove('bg-primary', 'text-white');
+            btn.classList.add('bg-gray-200', 'hover:bg-gray-300');
+          }
+        });
+        
+        // 滚动到问题区域
+        questionsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+    
+    // 设置事件监听器
+    function setupEventListeners() {
+      // 上一题按钮
+      prevBtn.addEventListener('click', () => {
+        if (currentQuestionIndex > 0) {
+          currentQuestionIndex--;
+          renderQuestion(currentQuestionIndex);
+          updateProgress();
+          
+          // 更新维度按钮状态
+          const currentDimension = questions[currentQuestionIndex].dimension;
+          dimensionButtons.forEach(btn => {
+            if (parseInt(btn.dataset.dimension) === currentDimension) {
+              btn.classList.remove('bg-gray-200', 'hover:bg-gray-300');
+              btn.classList.add('bg-primary', 'text-white');
+            } else {
+              btn.classList.remove('bg-primary', 'text-white');
+              btn.classList.add('bg-gray-200', 'hover:bg-gray-300');
+            }
+          });
+        }
+      });
+      
+      // 下一题/提交按钮
+      nextBtn.addEventListener('click', () => {
+        // 如果是最后一题，显示结果
+        if (currentQuestionIndex === questions.length - 1) {
+          // 检查是否所有问题都已回答
+          if (answers.every(answer => answer !== null)) {
+            showResults();
+          } else {
+            // 提示用户完成所有问题
+            alert('请完成所有问题后再提交');
+            
+            // 滚动到第一个未回答的问题
+            const firstUnanswered = answers.findIndex(answer => answer === null);
+            if (firstUnanswered !== -1) {
+              currentQuestionIndex = firstUnanswered;
+              renderQuestion(currentQuestionIndex);
+              updateProgress();
+            }
+          }
+        } else {
+          currentQuestionIndex++;
+          renderQuestion(currentQuestionIndex);
+          updateProgress();
+          
+          // 更新维度按钮状态
+          const currentDimension = questions[currentQuestionIndex].dimension;
+          dimensionButtons.forEach(btn => {
+            if (parseInt(btn.dataset.dimension) === currentDimension) {
+              btn.classList.remove('bg-gray-200', 'hover:bg-gray-300');
+              btn.classList.add('bg-primary', 'text-white');
+            } else {
+              btn.classList.remove('bg-primary', 'text-white');
+              btn.classList.add('bg-gray-200', 'hover:bg-gray-300');
+            }
+          });
+        }
+      });
+      
+      // 重新测试按钮
+      restartBtn.addEventListener('click', resetTest);
+      
+      // 移动端菜单按钮
+      mobileMenuButton.addEventListener('click', () => {
+        mobileMenu.classList.toggle('hidden');
+      });
+      
+      // 维度按钮
+      dimensionButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const dimension = parseInt(btn.dataset.dimension);
+          goToDimension(dimension);
+        });
+      });
+      
+      // 滚动事件 - 导航栏样式变化和返回顶部按钮
+      window.addEventListener('scroll', () => {
+        const navbar = document.getElementById('navbar');
+        if (window.scrollY > 50) {
+          navbar.classList.add('py-2', 'shadow-md');
+          navbar.classList.remove('py-3', 'shadow-soft');
+          
+          // 显示返回顶部按钮
+          backToTopButton.classList.remove('opacity-0', 'invisible');
+          backToTopButton.classList.add('opacity-100', 'visible');
+        } else {
+          navbar.classList.add('py-3', 'shadow-soft');
+          navbar.classList.remove('py-2', 'shadow-md');
+          
+          // 隐藏返回顶部按钮
+          backToTopButton.classList.add('opacity-0', 'invisible');
+          backToTopButton.classList.remove('opacity-100', 'visible');
+        }
+      });
+      
+      // 返回顶部按钮点击事件
+      backToTopButton.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+      
+      // 平滑滚动导航
+      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+          e.preventDefault();
+          const targetId = this.getAttribute('href');
+          const targetElement = document.querySelector(targetId);
+          
+          if (targetElement) {
+            targetElement.scrollIntoView({ behavior: 'smooth' });
+            
+            // 如果是移动端，点击后关闭菜单
+            if (!mobileMenu.classList.contains('hidden')) {
+              mobileMenu.classList.add('hidden');
+            }
+          }
+        });
+      });
+    }
+    
+    // 初始化
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
